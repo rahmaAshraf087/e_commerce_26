@@ -25,13 +25,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async{
     if (_formKey.currentState!.validate()) {
     UserCredential userCredential=await  FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
-    if(userCredential.user!= null)
+    if(userCredential.user!= null && FirebaseAuth.instance.currentUser!.emailVerified)
       {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Logged in succes')),
         );
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainWrapper()));
       }
+    else if(!(FirebaseAuth.instance.currentUser!.emailVerified)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('please verify your email before login')),
+      );
+    }
     else
       {
         ScaffoldMessenger.of(context).showSnackBar(

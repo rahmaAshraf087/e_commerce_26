@@ -4,14 +4,14 @@ class ProductCard extends StatelessWidget {
   final String title;
   final double price;
   final String description;
-  final String image;
+  final String? image;
 
   const ProductCard({
     super.key,
     required this.title,
     required this.price,
     required this.description,
-    required this.image,
+     this.image,
   });
 
   @override
@@ -44,7 +44,13 @@ class ProductCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  const Center(child: Icon(Icons.shopping_bag_outlined, size: 40, color: Colors.blue)),
+                   Center(
+                      child: image ==null?Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 40,
+                          color: Colors.blue,
+                      ):Image.network(image!),
+                  ),
                   PositionBag(
                     top: 10,
                     right: 10,

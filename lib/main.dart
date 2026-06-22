@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce_app_api_26/utils/app_theme.dart';
 
 import 'features/auth/presentation/screens/signup_screen.dart';
+import 'features/home/presentation/screens/home_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {

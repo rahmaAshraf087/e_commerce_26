@@ -14,7 +14,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  final auth=FirebaseAuth.instance;
   @override
   void dispose() {
     _nameController.dispose();
@@ -25,9 +25,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _signup()async {
     if (_formKey.currentState!.validate()) {
-      UserCredential userCredential= await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
+      UserCredential userCredential= await auth.createUserWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
       if(userCredential.user!=null)
         {
+          auth.currentUser!.sendEmailVerification();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Signed up')),
           );
