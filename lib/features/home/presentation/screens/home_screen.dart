@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_app_api_26/features/home/presentation/widgets/product_card.dart';
 
@@ -17,26 +18,61 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     getProducts();
+    getFavorites();
+    getCart();
+
   }
   
   void getProducts() {
 
     productsReference=FirebaseFirestore.instance.collection("Products");
   }
-  
-  
+
+  late List favorites=[];
+  bool loading = true;
+
+  void getFavorites()async{
+    String userId=FirebaseAuth.instance.currentUser!.uid;
+    favorites=await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((snapshot){
+          return snapshot.get('favorites') as List;
+    });
+    setState(() {
+      loading=false;
+    });
+  }
+
+  late Map<String, dynamic> cart = {};
+
+  void getCart() async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+    Map<String, dynamic> data = snapshot.data()! as Map<String, dynamic>;
+    setState(() {
+      cart = data['cart'] != null
+          ? Map<String, dynamic>.from(data['cart'])
+          : {};
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> dummyProducts = List.generate(
-      10,
-      (index) => {
-        'id': index,
-        'title': 'Product ${index + 1}',
-        'description': 'Modern design for daily life',
-        'price': (index + 1) * 20.0,
-        'image': 'https://via.placeholder.com/150',
-      },
-    );
+    // final List<Map<String, dynamic>> dummyProducts = List.generate(
+    //   10,
+    //   (index) => {
+    //     'id': index,
+    //     'title': 'Product ${index + 1}',
+    //     'description': 'Modern design for daily life',
+    //     'price': (index + 1) * 20.0,
+    //     'image': 'https://via.placeholder.com/150',
+    //   },
+    // );
 
     TextEditingController _nameController = TextEditingController(),
         _descriptionController = TextEditingController(),
@@ -182,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: FutureBuilder(
                 future: productsReference.get(),
                 builder: (context, asyncSnapshot) {
-                  if(!asyncSnapshot.hasData){
+                  if(!asyncSnapshot.hasData || loading){
                     return const Center(child: CircularProgressIndicator());
                   }
                   return GridView.builder(
@@ -200,8 +236,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       return ProductCard(
                         title: product['name'],
                         price: product['price'],
+                        id: asyncSnapshot.data!.docs[index].id,
                         description: product['description'],
                         image: product['image_url'],
+                        isFavorite: favorites.contains(asyncSnapshot.data!.docs[index].id),
                       );
                     },
                   );
